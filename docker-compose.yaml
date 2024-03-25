@@ -1,0 +1,65 @@
+version: "3.2"
+
+services:
+  postgres-db:
+    image: postgres:13-alpine
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      ALLOW_IP_RANGE: 0.0.0.0/0
+    ports:
+      - "25433:5432"
+    networks:
+      - event-notification-network
+  
+  pgadmin-db:
+    image: dpage/pgadmin4
+    container_name: pgadmin-db
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+    ports:
+      - "5556:80"
+    depends_on:
+      - postgres-db
+    networks:
+      - event-notification-network
+  
+  zookeeper:
+    image: docker.io/bitnami/zookeeper:3.9
+    container_name: zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks:
+      - event-notification-network
+  
+  kafka:
+    image: docker.io/bitnami/kafka:3.4
+    container_name: kafka-broker-1
+    ports:
+      - "29092:29092"
+      - "29093:29093"
+    environment:
+      #- KAFKA_CFG_NODE_ID=0
+      #- KAFKA_CFG_PROCESS_ROLES=controller,broker
+      #- KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
+      #- KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: EXTERNAL_SAME_HOST://:29092,EXTERNAL_DIFERENT_HOST://:29093,INTERNAL://:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL_SAME_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL_SAME_HOST:PLAINTEXT,EXTERNAL_DIFERENT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    depends_on:
+      - zookeeper
+    networks:
+      - event-notification-network
+
+networks:
+  event-notification-network:
+    driver: bridge
