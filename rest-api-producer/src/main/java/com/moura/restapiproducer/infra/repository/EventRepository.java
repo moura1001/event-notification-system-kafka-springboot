@@ -12,6 +12,8 @@ import java.util.Optional;
 public interface EventRepository extends JpaRepository<Event, Long> {
     Optional<Event> findByType(EventType type);
 
+    boolean existsByType(EventType type);
+
     @Query("SELECT COUNT(e)>0 FROM Event e INNER JOIN e.subscribedes sub " +
             "WHERE e.type = :type AND sub.email = :email")
     boolean isAlreadySubscribed(String email, EventType type);
