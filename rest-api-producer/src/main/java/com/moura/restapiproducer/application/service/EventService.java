@@ -1,15 +1,20 @@
 package com.moura.restapiproducer.application.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.moura.restapiproducer.infra.model.Event;
 import com.moura.restapiproducer.infra.model.EventType;
 import com.moura.restapiproducer.infra.model.User;
 import com.moura.restapiproducer.infra.repository.EventRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 public class EventService {
@@ -18,6 +23,12 @@ public class EventService {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     public List<Event> getEvents() {
         try {
@@ -99,5 +110,36 @@ public class EventService {
         } catch (RuntimeException e) {
             throw new RuntimeException("internal error: " + e.getMessage());
         }
+    }
+
+    public boolean notifySubscribedes(EventType type) {
+        if (type == null)
+            throw new RuntimeException("invalid event type");
+
+        Optional<Event> event = eventRepository.findByTypeWithoutSubscribedes(type);
+        if (event.isEmpty())
+            throw new RuntimeException("the event " + type.name() + " is not registered");
+
+        String message = "";
+
+        try {
+            message = objectMapper.writeValueAsString(new EventKafkaProducer(event.get()));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("internal error: " + e.getMessage());
+        }
+
+        try {
+
+            CompletableFuture<SendResult<String, String>> future = kafkaTemplate.send("notification-started", message);
+            future.whenComplete((result, ex) -> {
+                if (ex != null)
+                    throw new RuntimeException(ex);
+            });
+
+        } catch (RuntimeException e) {
+            return false;
+        }
+
+        return true;
     }
 }

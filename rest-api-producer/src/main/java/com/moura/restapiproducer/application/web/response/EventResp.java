@@ -19,11 +19,17 @@ public record EventResp(
                 event.getName(),
                 event.getDescription(),
                 event.getType().name(),
-                new ArrayList<>(event.getSubscribedes().size())
+                new ArrayList<>(getSubscribedesSize(event))
         );
 
-        List<UserResp> subscribedes = event.getSubscribedes().stream()
-                .map((user) -> new UserResp(user)).collect(Collectors.toList());
-        this.subscribedes.addAll(subscribedes);
+        if (event.getSubscribedes() != null && !event.getSubscribedes().isEmpty()) {
+            List<UserResp> subscribedes = event.getSubscribedes().stream()
+                    .map((user) -> new UserResp(user)).collect(Collectors.toList());
+            this.subscribedes.addAll(subscribedes);
+        }
+    }
+
+    private static int getSubscribedesSize(Event event) {
+        return event.getSubscribedes() != null ? event.getSubscribedes().size() : 0;
     }
 }

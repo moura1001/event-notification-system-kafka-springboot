@@ -51,7 +51,7 @@ public class EventController {
     ) {
         boolean isAdded = eventService.addSubscriber(email, type);
         if (isAdded)
-            return (ResponseEntity<String>) ResponseEntity.accepted();
+            return ResponseEntity.accepted().body("");
         else
             return ResponseEntity.badRequest().body("user is already subscribed to the event");
     }
@@ -63,8 +63,19 @@ public class EventController {
     ) {
         boolean isRemoved = eventService.removeSubscriber(email, type);
         if (isRemoved)
-            return (ResponseEntity<String>) ResponseEntity.accepted();
+            return ResponseEntity.accepted().body("");
         else
             return ResponseEntity.badRequest().body("user is not subscribed to the event");
+    }
+
+    @PutMapping("/{type}/notify")
+    public ResponseEntity<String> notifySubscribedes(
+            @PathVariable EventType type
+    ) {
+        boolean isNotifyStarted = eventService.notifySubscribedes(type);
+        if (isNotifyStarted)
+            return ResponseEntity.accepted().body("");
+        else
+            return ResponseEntity.internalServerError().body("unable to initiate subscriber notification process");
     }
 }

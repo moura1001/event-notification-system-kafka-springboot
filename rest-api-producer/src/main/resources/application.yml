@@ -46,6 +46,8 @@ spring:
   output:
     ansi:
       console-available: true
+  kafka:
+    bootstrap-servers: ${BOOTSTRAP_SERVERS}
 
 server:
   port: 8080
