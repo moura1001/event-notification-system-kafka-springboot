@@ -44,7 +44,7 @@ public class EventController {
         ).body(new EventResp(eventSaved));
     }
 
-    @PatchMapping("/{type}")
+    @PatchMapping("/{type}/add")
     public ResponseEntity<String> addSubscriber(
             @PathVariable EventType type,
             @RequestParam(value = "email") String email
@@ -56,7 +56,7 @@ public class EventController {
             return ResponseEntity.badRequest().body("user is already subscribed to the event");
     }
 
-    @PatchMapping("/{type}")
+    @PatchMapping("/{type}/remove")
     public ResponseEntity<String> removeSubscriber(
             @PathVariable EventType type,
             @RequestParam(value = "email") String email

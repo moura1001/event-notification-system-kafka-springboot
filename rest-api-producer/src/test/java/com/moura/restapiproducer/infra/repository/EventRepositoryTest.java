@@ -49,15 +49,15 @@ class EventRepositoryTest {
     @Test
     @Order(1)
     void shouldBeFindByType() {
-        Optional<Event> event = eventRepository.findByType(EventType.NEWS);
+        Optional<Event> event = eventRepository.findByTypeWithtSubscribedes(EventType.NEWS);
         assertTrue(event.isPresent());
         assertEquals(3, event.get().getSubscribedes().size());
 
-        event = eventRepository.findByType(EventType.STATUS_UPDATES);
+        event = eventRepository.findByTypeWithtSubscribedes(EventType.STATUS_UPDATES);
         assertTrue(event.isPresent());
         assertEquals(0, event.get().getSubscribedes().size());
 
-        event = eventRepository.findByType(EventType.NEW_POSTS);
+        event = eventRepository.findByTypeWithtSubscribedes(EventType.NEW_POSTS);
         assertFalse(event.isPresent());
     }
 
@@ -71,37 +71,47 @@ class EventRepositoryTest {
     @Test
     @Order(3)
     void addSubscriberesToStatusUpdates() {
-        Event event = eventRepository.findByType(EventType.STATUS_UPDATES).get();
+        Event event = eventRepository.findByTypeWithtSubscribedes(EventType.STATUS_UPDATES).get();
         assertTrue(event.addSubscriber(new User("email1@email.com", "User 1")));
         assertFalse(event.addSubscriber(new User("email1@email.com", "User 1")));
         assertTrue(event.addSubscriber(new User("email3@email.com", "User 3")));
         eventRepository.saveAndFlush(event);
 
-        event = eventRepository.findByType(EventType.STATUS_UPDATES).get();
+        event = eventRepository.findByTypeWithtSubscribedes(EventType.STATUS_UPDATES).get();
         assertEquals(2, event.getSubscribedes().size());
         assertTrue(event.addSubscriber(new User("email2@email.com", "User 2")));
         eventRepository.saveAndFlush(event);
 
-        event = eventRepository.findByType(EventType.STATUS_UPDATES).get();
+        event = eventRepository.findByTypeWithtSubscribedes(EventType.STATUS_UPDATES).get();
         assertEquals(3, event.getSubscribedes().size());
     }
 
     @Test
     @Order(4)
     void removeSubscriberesToNews() {
-        Event event = eventRepository.findByType(EventType.NEWS).get();
+        Event event = eventRepository.findByTypeWithtSubscribedes(EventType.NEWS).get();
         assertTrue(event.removeSubscriber(new User("email1@email.com", "User 1")));
         assertFalse(event.removeSubscriber(new User("email1@email.com", "User 1")));
         assertTrue(event.removeSubscriber(new User("email3@email.com", "User 3")));
         eventRepository.saveAndFlush(event);
 
-        event = eventRepository.findByType(EventType.NEWS).get();
+        event = eventRepository.findByTypeWithtSubscribedes(EventType.NEWS).get();
         assertEquals(1, event.getSubscribedes().size());
         assertFalse(event.addSubscriber(new User("email2@email.com", "User 2")));
         eventRepository.saveAndFlush(event);
 
-        event = eventRepository.findByType(EventType.NEWS).get();
+        event = eventRepository.findByTypeWithtSubscribedes(EventType.NEWS).get();
         assertEquals(1, event.getSubscribedes().size());
         assertTrue(event.getSubscribedes().contains(new User("email2@email.com", "User 2")));
+    }
+
+    @Test
+    @Order(5)
+    void shouldBeFindByTypeWithoutSubscribedes() {
+        Optional<Event> event = eventRepository.findByTypeWithoutSubscribedes(EventType.NEWS);
+        assertTrue(event.isPresent());
+        assertEquals("News", event.get().getName());
+        assertEquals("description...", event.get().getDescription());
+        assertEquals(EventType.NEWS, event.get().getType());
     }
 }

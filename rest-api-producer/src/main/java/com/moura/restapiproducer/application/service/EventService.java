@@ -21,7 +21,7 @@ public class EventService {
 
     public List<Event> getEvents() {
         try {
-            return eventRepository.findAll();
+            return eventRepository.findAllWithtSubscribedes();
         } catch (RuntimeException e) {
             throw new RuntimeException("internal error: " + e.getMessage());
         }
@@ -29,7 +29,7 @@ public class EventService {
 
     public Event getEventByType(EventType type) {
         try {
-            Optional<Event> e = eventRepository.findByType(type);
+            Optional<Event> e = eventRepository.findByTypeWithtSubscribedes(type);
             if (e.isPresent())
                 return e.get();
 
@@ -57,7 +57,7 @@ public class EventService {
 
         User user = userService.getUserByEmail(email);
         try {
-            Event event = eventRepository.findByType(type).get();
+            Event event = eventRepository.findByTypeWithtSubscribedes(type).get();
             event.addSubscriber(user);
             eventRepository.save(event);
         } catch (RuntimeException e) {
@@ -73,7 +73,7 @@ public class EventService {
 
         User user = userService.getUserByEmail(email);
         try {
-            Event event = eventRepository.findByType(type).get();
+            Event event = eventRepository.findByTypeWithtSubscribedes(type).get();
             event.removeSubscriber(user);
             eventRepository.save(event);
         } catch (RuntimeException e) {

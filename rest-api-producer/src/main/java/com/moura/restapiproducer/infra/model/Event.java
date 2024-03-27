@@ -23,7 +23,7 @@ public class Event {
     @Enumerated
     private EventType type;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "events_subscribedes",
             joinColumns = @JoinColumn(name = "event_id"),
@@ -95,7 +95,6 @@ public class Event {
         return true;
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -106,5 +105,15 @@ public class Event {
     @Override
     public int hashCode() {
         return Objects.hash(getId(), getName(), getType());
+    }
+
+    @Override
+    public String toString() {
+        return "Event{" +
+                "id=" + id +
+                ", name='" + name + '\'' +
+                ", description='" + description + '\'' +
+                ", type=" + type +
+                '}';
     }
 }
